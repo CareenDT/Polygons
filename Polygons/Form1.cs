@@ -9,9 +9,9 @@ namespace Polygons
         Triangle triangle1;
         public Form1()
         {
-            square1 = new Square(new Point(200, 50), new Size(400,100));
-            circle1 = new Circle(new Point(200, 200), new Size(200,200));
-            triangle1 = new Triangle(new Point(100, 50), new Size(200, 100));
+            square1 = new Square(200, 200);
+            circle1 = new Circle(200, 400);
+            triangle1 = new Triangle(400, 200);
             InitializeComponent();
         }
 
@@ -20,6 +20,11 @@ namespace Polygons
             square1.Draw(e.Graphics);
             circle1.Draw(e.Graphics);
             triangle1.Draw(e.Graphics);
+        }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            Console.Write(square1.IsInside(e.X, e.Y));
         }
     }
 }
