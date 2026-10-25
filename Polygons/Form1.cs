@@ -29,19 +29,28 @@ namespace Polygons
             {
                 for (int j = i + 1; j < _activeShapes.Count; j++)
                 {
-                    if (i == j) continue;
+                    var a = _activeShapes[i];
+                    var b = _activeShapes[j];
 
+                    bool left = false, right = false;
 
-                    int k = (_activeShapes[i].Y - _activeShapes[j].Y) / (_activeShapes[i].X - _activeShapes[j].X);
-                    int b = _activeShapes[i].Y - k * _activeShapes[i].X;
+                    for (int k = 0; k < _activeShapes.Count; k++)
+                    {
+                        if (k == i || k == j) continue;
 
+                        var p = _activeShapes[k];
+                        float cross = (b.X - a.X) * (p.Y - a.Y) - (b.Y - a.Y) * (p.X - a.X);
 
-                    int y1 = k * _activeShapes[i].Y + b;
-                    if (y1 > _activeShapes[i].Y) g.DrawLine(_hullPen, _activeShapes[i].X, _activeShapes[i].Y, _activeShapes[j].X, _activeShapes[j].Y);
+                        if (cross > 0) left = true;
+                        else if (cross < 0) right = true;
 
+                        if (left && right) break;
+                    }
+
+                    if (!(left && right))
+                        g.DrawLine(_hullPen, a.X, a.Y, b.X, b.Y);
                 }
             }
-
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
