@@ -7,23 +7,23 @@ namespace Polygons.Shapes
 {
     public abstract class Shape
     {
-        protected static readonly Pen pen;
+        protected static readonly Brush _br;
 
-        protected int x;
-        protected int y;
-        protected static int radius;
+        protected int _x;
+        protected int _y;
+        protected static int _radius;
 
-        //protected bool isMoving;
-        protected int moveDX;
-        protected int moveDY;
+        protected bool _isMoving;
+        protected int _moveDX;
+        protected int _moveDY;
 
-        public virtual int X { get { return x; } set { x = value; } }
-        public virtual int Y { get { return y; } set { y = value; } }
-        public int Radius { get { return radius; } set { radius = value; } }
+        public virtual int X { get { return _x; } set { _x = value; } }
+        public virtual int Y { get { return _y; } set { _y = value; } }
+        public int Radius { get { return _radius; } set { _radius = value; } }
 
-        //public bool IsMoving { get { return isMoving; } set { isMoving = value; } }
-        public int MoveDX { get { return moveDX; } set { moveDX = value; } }
-        public int MoveDY { get { return moveDY; } set { moveDY = value; } }
+        public bool IsMoving { get { return _isMoving; } set { _isMoving = value; } }
+        public int MoveDX { get { return _moveDX; } set { _moveDX = value; } }
+        public int MoveDY { get { return _moveDY; } set { _moveDY = value; } }
 
         public virtual void Draw(Graphics g) { }
 
@@ -31,14 +31,20 @@ namespace Polygons.Shapes
 
         static Shape()
         {
-            pen = new Pen(new SolidBrush(Color.Gray));
+            _br = new SolidBrush(Color.Black);
 
-            radius = 150;
+            _radius = 50;
+        }
+
+        public virtual void Move(int x, int y)
+        {
+            this._x = x + _moveDX;
+            this._y = y + _moveDY;
         }
 
         protected Point GetPointOnCircle(float angle)
         {
-            return new Point((int)(MathF.Cos(angle) * radius), (int)(MathF.Sin(angle) * radius));
+            return new Point((int)(MathF.Cos(angle) * _radius), (int)(MathF.Sin(angle) * _radius));
         }
     }
 
@@ -46,36 +52,47 @@ namespace Polygons.Shapes
     {
         public override int X
         {
-            get => x;
-            set { x = value; RecalculateExtents(); }
+            get => _x;
+            set { _x = value; RecalculateExtents(); }
         }
 
         public override int Y
         {
-            get => y;
-            set { y = value; RecalculateExtents(); }
+            get => _y;
+            set { _y = value; RecalculateExtents(); }
         }
 
         protected Rectangle extents;
 
+        public override void Move(int x, int y)
+        {
+            this._x = x + _moveDX;
+            this._y = y + _moveDY;
+            RecalculateExtents();
+        }
+
         public Square(int x, int y)
         {
-            this.x = x;
-            this.y = y;
+            this._x = x;
+            this._y = y;
 
             RecalculateExtents();
         }
 
         private void RecalculateExtents()
         {
-            int corner = (int)(MathF.Cos(0.785398f) * radius);
-            extents = new Rectangle(x - corner, y - corner, corner * 2, corner * 2);
+            int corner = (int)(MathF.Cos(0.785398f) * _radius);
+            extents.Width = corner * 2;
+            extents.Height = corner * 2;
+
+            extents.X = _x - corner;
+            extents.Y = _y - corner;
         }
 
         public override void Draw(Graphics g)
         {
 
-            g.DrawRectangle(pen, extents);
+            g.FillRectangle(_br, extents);
         }
 
         public override bool IsInside(int mouseX, int mouseY)
@@ -89,21 +106,21 @@ namespace Polygons.Shapes
     {
         public Circle(int x, int y)
         {
-            this.x = x;
-            this.y = y;
+            this._x = x;
+            this._y = y;
         }
 
         public override void Draw(Graphics g)
         {
-            g.DrawEllipse(pen, new Rectangle(x - radius, y - radius, radius * 2, radius * 2));
+            g.FillEllipse(_br, new Rectangle(_x - _radius, _y - _radius, _radius * 2, _radius * 2));
         }
 
         public override bool IsInside(int mouseX, int mouseY)
         {
-            int relativeX = x - mouseX;
-            int relativeY = y - mouseY;
+            int relativeX = _x - mouseX;
+            int relativeY = _y - mouseY;
 
-            return MathF.Sqrt(relativeX * relativeX + relativeY * relativeY) <= radius;
+            return MathF.Sqrt(relativeX * relativeX + relativeY * relativeY) <= _radius;
         }
     }
 
@@ -114,8 +131,8 @@ namespace Polygons.Shapes
 
         public Triangle(int x, int y)
         {
-            this.x = x;
-            this.y = y;
+            this._x = x;
+            this._y = y;
         }
 
         public override void Draw(Graphics g)
@@ -123,11 +140,11 @@ namespace Polygons.Shapes
             Point sidePoint = GetPointOnCircle(0.523599f);
             points =
             [
-                new(x, y - radius),
-                new(x - sidePoint.X, y + sidePoint.Y),
-                new(x + sidePoint.X, y + sidePoint.Y)
+                new(_x, _y - _radius),
+                new(_x - sidePoint.X, _y + sidePoint.Y),
+                new(_x + sidePoint.X, _y + sidePoint.Y)
             ];
-            g.DrawPolygon(pen, points);
+            g.FillPolygon(_br, points);
         }
 
         public override bool IsInside(int mouseX, int mouseY)
