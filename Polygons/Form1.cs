@@ -18,12 +18,12 @@ namespace Polygons
                 new Triangle(400, 200)
             ];
 
-            _hullPen = new Pen(Color.LightYellow);
+            _hullPen = new Pen(Color.DarkViolet);
 
             InitializeComponent();
         }
 
-        private void DrawHull(Graphics g)
+        private void DrawHullByCross(Graphics g)
         {
             for (int i = 0; i < _activeShapes.Count; i++)
             {
@@ -53,9 +53,63 @@ namespace Polygons
             }
         }
 
+        private void DrawHullByDefinition(Graphics g)
+        {
+            int n = _activeShapes.Count;
+            if (n < 2) return;
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = i + 1; j < n; j++)
+                {
+                    var a = _activeShapes[i];
+                    var b = _activeShapes[j];
+
+                    if (a.X == b.X)
+                    {
+                        bool allLeft = true;
+                        bool allRight = true;
+
+                        foreach (var p in _activeShapes)
+                        {
+                            if (p == a || p == b || p == a || p == b) continue;
+
+                            if (p.X < a.X) allLeft = false;
+                            else if (p.X > a.X) allRight = false;
+                        }
+
+                        if (allLeft || allRight)
+                            g.DrawLine(_hullPen, a.X, a.Y, b.X, b.Y);
+
+                        continue;
+                    }
+
+                    long D = (long)a.X - b.X;
+
+                    bool allAbove = true;
+                    bool allBelow = true;
+
+                    foreach (var p in _activeShapes)
+                    {
+                        if (p == a || p == b) continue;
+
+                        long expr = (a.Y - b.Y) * ((long)p.X - a.X)
+                                  + (a.Y - p.Y) * D;
+                        long s = (D > 0) ? expr : -expr;
+
+                        if (s > 0) allBelow = false;
+                        else if (s < 0) allAbove = false;
+                    }
+
+                    if (allAbove || allBelow)
+                        g.DrawLine(_hullPen, a.X, a.Y, b.X, b.Y);
+                }
+            }
+        }
+
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            DrawHull(e.Graphics);
+            DrawHullByDefinition(e.Graphics);
             foreach (Shape shape in _activeShapes)
             {
                 shape.Draw(e.Graphics);
