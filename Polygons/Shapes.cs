@@ -14,6 +14,7 @@ namespace Polygons.Shapes
         protected static int _radius;
 
         protected bool _isMoving;
+        protected bool _isInHull;
         protected int _moveDX;
         protected int _moveDY;
 
@@ -22,6 +23,7 @@ namespace Polygons.Shapes
         public int Radius { get { return _radius; } set { _radius = value; } }
 
         public bool IsMoving { get { return _isMoving; } set { _isMoving = value; } }
+        public bool IsInHull { get { return _isInHull; } set { _isInHull = value; } }
         public int MoveDX { get { return _moveDX; } set { _moveDX = value; } }
         public int MoveDY { get { return _moveDY; } set { _moveDY = value; } }
 
@@ -33,7 +35,7 @@ namespace Polygons.Shapes
         {
             _br = new SolidBrush(Color.Black);
 
-            _radius = 50;
+            _radius = 25;
         }
 
         public virtual void Move(int x, int y)

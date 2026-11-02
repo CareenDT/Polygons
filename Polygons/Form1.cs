@@ -7,7 +7,8 @@ namespace Polygons
     {
         private readonly Pen _hullPen;
         private readonly List<Shape> _activeShapes;
-
+        private readonly Font _arialFont;
+        private readonly Brush _textBrush;
         private int _selectedPlacementShape;
 
         public Form1()
@@ -18,19 +19,28 @@ namespace Polygons
                 new Triangle(400, 200)
             ];
 
-            _hullPen = new Pen(Color.LightYellow);
+            _selectedPlacementShape = 1;
+
+            _textBrush = new SolidBrush(Color.FloralWhite);
+            _arialFont = new("Arial", 16);
+
+            _hullPen = new Pen(Color.Coral);
+
 
             InitializeComponent();
         }
 
         private void DrawHull(Graphics g)
         {
+            if (_activeShapes.Count < 3) return;
+            _activeShapes.ForEach(s => { s.IsInHull = false; } );
+
             for (int i = 0; i < _activeShapes.Count; i++)
             {
                 for (int j = i + 1; j < _activeShapes.Count; j++)
                 {
-                    var a = _activeShapes[i];
-                    var b = _activeShapes[j];
+                    Shape a = _activeShapes[i];
+                    Shape b = _activeShapes[j];
 
                     bool left = false, right = false;
 
@@ -38,7 +48,7 @@ namespace Polygons
                     {
                         if (k == i || k == j) continue;
 
-                        var p = _activeShapes[k];
+                        Shape p = _activeShapes[k];
                         float cross = (b.X - a.X) * (p.Y - a.Y) - (b.Y - a.Y) * (p.X - a.X);
 
                         if (cross > 0) left = true;
@@ -48,20 +58,30 @@ namespace Polygons
                     }
 
                     if (!(left && right))
+                    {
+                        a.IsInHull = true;
+                        b.IsInHull = true;
                         g.DrawLine(_hullPen, a.X, a.Y, b.X, b.Y);
+                    }
                 }
             }
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
+            long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
             DrawHull(e.Graphics);
             foreach (Shape shape in _activeShapes)
             {
                 shape.Draw(e.Graphics);
             }
-        }
 
+            long elapsed = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - currentTime);
+
+            e.Graphics.DrawString(elapsed.ToString(), Font, _textBrush, new Point(0,50));
+        }
+        
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
 
@@ -137,6 +157,10 @@ namespace Polygons
                     shape.IsMoving = false;
                 }
             }
+
+            if (_activeShapes.Count < 3) return;
+            _activeShapes.RemoveAll(shape => !shape.IsInHull);
+            Refresh();
         }
 
         private void Form1_Load(object sender, EventArgs e)
